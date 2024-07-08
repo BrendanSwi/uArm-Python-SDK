@@ -9,6 +9,7 @@
 import time
 import re
 import os
+import sys
 import threading
 try:
     from multiprocessing.pool import ThreadPool
@@ -16,6 +17,11 @@ except:
     ThreadPool = None
 try:
     import asyncio
+
+    if sys.version_info.major >= 3 and sys.version_info.minor >= 5:
+        from .grammar_async import AsyncObject as BaseObject
+    else:
+        from .grammar_coroutine import CoroutineObject as BaseObject
 except:
     asyncio = None
 from queue import Queue
@@ -41,7 +47,7 @@ class HandleQueue(Queue):
         return None
 
 
-class Swift(Pump, Keys, Gripper, Grove):
+class Swift(BaseObject, Pump, Keys, Gripper, Grove):
     def __init__(self, port=None, baudrate=115200, timeout=None, **kwargs):
         super(Swift, self).__init__()
         self.cmd_pend = {}
@@ -134,17 +140,18 @@ class Swift(Pump, Keys, Gripper, Grove):
             #         await asyncio.sleep(0.01)
             #     logger.debug('asyncio thread exit ...')
 
-            @asyncio.coroutine
-            def _asyncio_loop():
-                logger.debug('asyncio thread start ...')
-                while self.connected:
-                    yield from asyncio.sleep(0.01)
-                logger.debug('asyncio thread exit ...')
+            # @asyncio.coroutine
+            # def _asyncio_loop():
+            #     logger.debug('asyncio thread start ...')
+            #     while self.connected:
+            #         yield from asyncio.sleep(0.01)
+            #     logger.debug('asyncio thread exit ...')
 
             try:
                 asyncio.set_event_loop(self._asyncio_loop)
                 self._asyncio_loop_alive = True
-                self._asyncio_loop.run_until_complete(_asyncio_loop())
+                # self._asyncio_loop.run_until_complete(_asyncio_loop())
+                self._asyncio_loop.run_until_complete(self._asyncio_loop_func())
             except Exception as e:
                 pass
 
@@ -162,15 +169,15 @@ class Swift(Pump, Keys, Gripper, Grove):
         else:
             callback(msg)
 
-    if asyncio:
-        @staticmethod
-        @asyncio.coroutine
-        def _async_run_callback(callback, msg):
-            yield from callback(msg)
+    # if asyncio:
+    #     @staticmethod
+    #     @asyncio.coroutine
+    #     def _async_run_callback(callback, msg):
+    #         yield from callback(msg)
 
-        # @staticmethod
-        # async def _async_run_callback(callback, msg):
-        #     await callback(msg)
+    #     # @staticmethod
+    #     # async def _async_run_callback(callback, msg):
+    #     #     await callback(msg)
 
     def _loop_handle(self):
         logger.debug('serial result handle thread start ...')
