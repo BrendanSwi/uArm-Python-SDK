@@ -7,18 +7,19 @@
 # Author: Vinman <vinman.wen@ufactory.cc> <vinman.cub@gmail.com>
 
 import os
-from distutils.util import convert_path
+# from distutils.util import convert_path
+from pathlib import Path
 
 try:
     from setuptools import setup, find_packages
 except ImportError:
-    from distutils.core import setup
+    from setuptools import setup
 
     def find_packages():
         return ['uarm', 'uarm.comm', 'uarm.utils', 'uarm.tools', 'uarm.wrapper', 'uarm.swift', 'uarm.metal']
 
 main_ns = {}
-ver_path = convert_path('uarm/version.py')
+ver_path = Path('uarm/version.py')
 with open(os.path.join(os.getcwd(), ver_path)) as ver_file:
     exec(ver_file.read(), main_ns)
 
