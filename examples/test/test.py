@@ -40,7 +40,7 @@
 import time
 from serial import Serial
 
-com = Serial("COM12", baudrate=115200)
+com = Serial("COM5", baudrate=115200)
 
 print('getCD:', com.getCD())
 print('getCTS:', com.getCTS())
